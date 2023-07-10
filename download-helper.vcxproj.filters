@@ -26,28 +26,44 @@
     <QtRcc Include="downloadhelper.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
-    <QtUic Include="downloadhelper.ui">
-      <Filter>Form Files</Filter>
-    </QtUic>
-    <QtMoc Include="downloadhelper.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <ClCompile Include="downloadhelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ResourceCompile Include="$pro_name$.rc">
-    </ResourceCompile>
-    <None Include="$pro_name$.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="$pro_name$.def">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="download-helper.ico">
       <Filter>Resource Files</Filter>
     </None>
     <ResourceCompile Include="download-helper.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mainwindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="downloadthread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="downloadcard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="mainwindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="downloadthread.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="downloadcard.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="mainwindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="downloadcard.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
 </Project>

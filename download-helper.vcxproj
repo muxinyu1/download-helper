@@ -15,8 +15,7 @@
     <Keyword>QtVS_v304</Keyword>
     <WindowsTargetPlatformVersion Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">10.0.22000.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformVersion Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">10.0.22000.0</WindowsTargetPlatformVersion>
-    <QtMsBuild Condition="'$(QtMsBuild)'=='' OR !Exists('$(QtMsBuild)\qt.targets')"
-      >$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>
+    <QtMsBuild Condition="'$(QtMsBuild)'=='' OR !Exists('$(QtMsBuild)\qt.targets')">$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
@@ -33,19 +32,16 @@
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
     <QtInstall>6.2.4_msvc2019_64</QtInstall>
-    <QtModules>core;gui;network;widgets</QtModules>
+    <QtModules>core;gui;network;qml;widgets</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
     <QtInstall>6.2.4_msvc2019_64</QtInstall>
-    <QtModules>core;gui;widgets</QtModules>
+    <QtModules>core;gui;network;qml;widgets</QtModules>
     <QtBuildConfig>release</QtBuildConfig>
   </PropertyGroup>
-  <Target Name="QtMsBuildNotFound"
-    BeforeTargets="CustomBuild;ClCompile"
-    Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
-    <Message Importance="High"
-      Text="QtMsBuild: could not locate qt.targets, qt.props; project may not build correctly." />
+  <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
+    <Message Importance="High" Text="QtMsBuild: could not locate qt.targets, qt.props; project may not build correctly." />
   </Target>
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="Shared" />
@@ -87,13 +83,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <QtRcc Include="downloadhelper.qrc"/>
-    <QtUic Include="downloadhelper.ui"/>
-    <QtMoc Include="downloadhelper.h"/>
-    <ClCompile Include="downloadhelper.cpp"/>
-    <ClCompile Include="main.cpp"/>
+    <ClCompile Include="downloadcard.cpp" />
+    <ClCompile Include="downloadthread.cpp" />
+    <ClCompile Include="mainwindow.cpp" />
+    <QtRcc Include="downloadhelper.qrc" />
+    <ClCompile Include="main.cpp" />
     <None Include="download-helper.ico" />
     <ResourceCompile Include="download-helper.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="mainwindow.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="downloadcard.ui" />
+    <QtUic Include="mainwindow.ui" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="downloadthread.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="downloadcard.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
