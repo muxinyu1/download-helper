@@ -1,15 +1,12 @@
-#include <QtWidgets/QApplication>
+#include "mainwindow.h"
 #include <QCommandLineParser>
-#include <QString>
 #include <QDebug>
-
-#include <iostream>
+#include <QException>
+#include <QString>
+#include <QtWidgets/QApplication>
 
 int main(int argc, char *argv[]) {
-  QCoreApplication app{argc, argv};
-  QCoreApplication::setApplicationName("Download Helper");
-  QCoreApplication::setApplicationVersion("1.0");
-
+  QApplication app{argc, argv};
   QCommandLineParser parser;
   parser.setApplicationDescription("A Download Helper");
   parser.addHelpOption();
@@ -30,6 +27,12 @@ int main(int argc, char *argv[]) {
   const auto concurrency = parser.value(concurrencyOption).toInt();
 
   qDebug() << "url = " << url << "\noutput = " << output
-           << "\nn = " << concurrency << "\n";
-  return 0;
+           << "\nn = " << concurrency;
+
+  MainWindow mainwindow{};
+  mainwindow.show();
+  if (url != "") { // TODO: 检查输入是否合法
+    mainwindow.createDownloadTask(url, output, concurrency);
+  }
+  return app.exec();
 }

@@ -1,13 +1,12 @@
 #include "downloadcard.h"
 
 DownloadCard::DownloadCard(QWidget *parent)
-	: QWidget(parent)
-	, ui(new Ui::DownloadCardClass())
-{
-	ui->setupUi(this);
+    : QWidget(parent), ui(new Ui::DownloadCardClass()) {
+  ui->setupUi(this);
 }
 
-DownloadCard::~DownloadCard()
-{
-	delete ui;
+DownloadCard::~DownloadCard() { delete ui; }
+
+void DownloadCard::updateProgressBar(int percent) {
+  ui->progressBar->setValue(percent);
 }

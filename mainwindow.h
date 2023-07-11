@@ -1,12 +1,14 @@
 #pragma once
 
 #include "downloadthread.h"
+#include "taskstate.h"
 #include "ui_mainwindow.h"
 #include <QHash>
 #include <QMainWindow>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QThread>
+#include <QSharedPointer>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -28,7 +30,7 @@ public:
 private:
   Ui::MainWindowClass *ui;
   QNetworkAccessManager *manager;
-  QHash<int, QHash<int, bool>> tasks;
+  QHash<int, QSharedPointer<TaskState>> tasks;
   int currentTaskId;
 
 private:
@@ -38,4 +40,6 @@ signals:
   void taskFinished(int taskId);
 private slots:
   void updateTaskState(int taskId, int threadIndex);
+  void updateTaskProgressBar(int taskId, qint64 downloadedSize);
+  void combineFiles(int taskId);
 };

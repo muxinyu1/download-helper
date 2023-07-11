@@ -1,6 +1,5 @@
 #pragma once
 
-#include <QWidget>
 #include "ui_downloadcard.h"
 
 QT_BEGIN_NAMESPACE
@@ -14,6 +13,8 @@ class DownloadCard : public QWidget
 public:
 	DownloadCard(QWidget *parent = nullptr);
 	~DownloadCard();
+
+	void updateProgressBar(int percent);
 
 private:
 	Ui::DownloadCardClass *ui;

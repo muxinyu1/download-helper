@@ -19,11 +19,13 @@ MainWindow::~MainWindow() {
   delete manager;
 }
 
-void MainWindow::Download(int taskId, QString url, QString output, int concurrency) {
+void MainWindow::Download(int taskId, QString url, QString output,
+                          int concurrency) {
+  qDebug() << QString{"create task{%1}, url = {%2}"}.arg(taskId).arg(url);
   QNetworkRequest request{QUrl(url)};
   auto reply = this->manager->head(request);
   connect(
-      reply, &QNetworkReply::isFinished, this,
+      reply, &QNetworkReply::finished, this,
       [this, reply, concurrency, url, taskId]() {
         if (reply->error() != QNetworkReply::NoError) {
           // TODO: 出现请求错误
@@ -32,20 +34,28 @@ void MainWindow::Download(int taskId, QString url, QString output, int concurren
             reply->header(QNetworkRequest::ContentLengthHeader).toLongLong();
         auto blockSize = contentLength / concurrency;
 
+        qDebug() << "content-length = " << contentLength;
+
+        // 设置TaskState的总字节数
+        tasks[taskId]->setBytesTotal(contentLength);
+
         // 初始化task对应的QHash
+        auto &threadState = tasks[taskId]->getThreadState();
         for (int i = 0; i < concurrency; ++i) {
-          tasks[taskId].insert(i, false);
+          threadState.insert(i, false);
         }
 
-        QList<DownloadThread *> threads{};
+        auto threads = tasks[taskId]->getThreads();
         for (int i = 0; i < concurrency; ++i) {
           auto begin = i * blockSize;
           auto end = begin + blockSize - 1;
           if (i == concurrency - 1) {
             end = contentLength - 1;
           }
-          DownloadThread *thread =
-              new DownloadThread(taskId, i, url, begin, end, , this);
+          auto thread = new DownloadThread(
+              taskId, i, url, begin, end, nullptr, nullptr); // TODO: 给线程添加ProgressBar
+          connect(thread, &DownloadThread::downloadSize, this,
+                  &MainWindow::updateTaskProgressBar);
           connect(thread, &DownloadThread::downloadFinished, this,
                   &MainWindow::updateTaskState);
           threads.push_back(thread);
@@ -53,26 +63,49 @@ void MainWindow::Download(int taskId, QString url, QString output, int concurren
         }
       });
   // TODO: connect 本线程下载完毕
+
+  connect(this, &MainWindow::taskFinished, this, &MainWindow::combineFiles);
+}
+
+void MainWindow::updateTaskProgressBar(int taskId, qint64 downloadedSize) {
+  auto task = tasks[taskId];
+  task->updateProgressBar(downloadedSize);
+}
+
+void MainWindow::combineFiles(int taskId) {
+  auto task = tasks[taskId];
+  task->combine();
 }
 
 void MainWindow::createDownloadTask(QString url, QString output,
                                     int concurrency) {
-  tasks.insert(currentTaskId, QHash<int, bool>{});
+  DownloadCard *downloadCard = new DownloadCard(ui->downloadingList);
+  QListWidgetItem *listItem = new QListWidgetItem();
+  listItem->setSizeHint(downloadCard->sizeHint());
+  ui->downloadingList->setItemWidget(listItem, downloadCard);
+  ui->downloadingList->addItem(listItem);
+  downloadCard->show();
+
+  tasks.insert(currentTaskId, QSharedPointer<TaskState>{new TaskState(
+                                  downloadCard, QHash<int, bool>{}, this)});
   Download(currentTaskId, url, output, concurrency);
   ++currentTaskId;
 }
 
 void MainWindow::updateTaskState(int taskId, int threadIndex) {
-  tasks[taskId][threadIndex] = true;
-  auto &task = tasks[taskId];
+  auto task = tasks[taskId];
+  task->getThreadState()[threadIndex] = true;
   bool finished = true;
-  for (auto i = task.begin(); i != task.end(); ++i) {
+  for (auto i = task->getThreadState().begin();
+       i != task->getThreadState().end(); ++i) {
     if (!*i) {
       finished = false;
       break;
     }
   }
   if (finished) {
+    qDebug() << "All threads ok, start to combine...";
+
     emit taskFinished(taskId);
   }
 }

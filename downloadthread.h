@@ -24,12 +24,12 @@ private:
   QString url;
   qlonglong begin;
   qlonglong end;
-  QNetworkAccessManager *manager;
   QProgressBar *progressBar;
 
-  void DownloadPart();
-  void SaveToTempDir(const QByteArray &bytes);
+  void downloadPart();
+  void saveToTempDir(const QByteArray &bytes);
 
 signals:
   void downloadFinished(int taskId, int threadIndex);
+  void downloadSize(int taskId, qint64 downloadedSize);
 };
