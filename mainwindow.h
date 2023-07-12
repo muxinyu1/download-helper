@@ -12,7 +12,7 @@
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
-class MainWindowClass;
+class MainWindow;
 };
 QT_END_NAMESPACE
 
@@ -28,7 +28,7 @@ public:
   void createDownloadTask(QString url, QString output, int concurrency);
 
 private:
-  Ui::MainWindowClass *ui;
+  Ui::MainWindow *ui;
   QNetworkAccessManager *manager;
   QHash<int, QSharedPointer<TaskState>> tasks;
   int currentTaskId;
@@ -40,6 +40,6 @@ signals:
   void taskFinished(int taskId);
 private slots:
   void updateTaskState(int taskId, int threadIndex);
-  void updateTaskProgressBar(int taskId, qint64 downloadedSize);
+  void updateTaskProgressBar(int taskId, int threadIndex, qint64 downloadedSize);
   void combineFiles(int taskId);
 };

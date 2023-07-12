@@ -1,14 +1,14 @@
 #include "mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindowClass()),
+    : QMainWindow(parent), ui(new Ui::MainWindow()),
       manager(new QNetworkAccessManager()), tasks(), currentTaskId(0) {
   ui->setupUi(this);
 }
 
 MainWindow::MainWindow(QString url, QString output, int concurrency,
                        QWidget *parrent)
-    : QMainWindow(parrent), ui(new Ui::MainWindowClass()),
+    : QMainWindow(parrent), ui(new Ui::MainWindow()),
       manager(new QNetworkAccessManager()), tasks(), currentTaskId(0) {
   ui->setupUi(this);
   createDownloadTask(url, output, concurrency);
@@ -67,9 +67,9 @@ void MainWindow::Download(int taskId, QString url, QString output,
   connect(this, &MainWindow::taskFinished, this, &MainWindow::combineFiles);
 }
 
-void MainWindow::updateTaskProgressBar(int taskId, qint64 downloadedSize) {
+void MainWindow::updateTaskProgressBar(int taskId, int threadIndex, qint64 downloadedSize) {
   auto task = tasks[taskId];
-  task->updateProgressBar(downloadedSize);
+  task->updateProgressBar(threadIndex, downloadedSize);
 }
 
 void MainWindow::combineFiles(int taskId) {
@@ -79,12 +79,16 @@ void MainWindow::combineFiles(int taskId) {
 
 void MainWindow::createDownloadTask(QString url, QString output,
                                     int concurrency) {
-  DownloadCard *downloadCard = new DownloadCard(ui->downloadingList);
-  QListWidgetItem *listItem = new QListWidgetItem();
-  listItem->setSizeHint(downloadCard->sizeHint());
-  ui->downloadingList->setItemWidget(listItem, downloadCard);
+  
+  QListWidgetItem *listItem = new QListWidgetItem(ui->downloadingList);
   ui->downloadingList->addItem(listItem);
+
+  DownloadCard *downloadCard = new DownloadCard();
+  listItem->setSizeHint(downloadCard->size());
+  ui->downloadingList->setItemWidget(listItem, downloadCard);
   downloadCard->show();
+
+  // ui->downloadingList->addItem("dsadsa");
 
   tasks.insert(currentTaskId, QSharedPointer<TaskState>{new TaskState(
                                   downloadCard, QHash<int, bool>{}, this)});
@@ -95,6 +99,11 @@ void MainWindow::createDownloadTask(QString url, QString output,
 void MainWindow::updateTaskState(int taskId, int threadIndex) {
   auto task = tasks[taskId];
   task->getThreadState()[threadIndex] = true;
+
+  qDebug() << QString{"MainWindow set taskId = %1, threadIndex = %2, true"}
+                  .arg(taskId)
+                  .arg(threadIndex);
+
   bool finished = true;
   for (auto i = task->getThreadState().begin();
        i != task->getThreadState().end(); ++i) {

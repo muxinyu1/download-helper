@@ -4,6 +4,7 @@
 #include <QHash>
 #include <QMutex>
 #include <QSharedPointer>
+#include <algorithm>
 #include "downloadcard.h"
 #include "downloadthread.h"
 
@@ -21,15 +22,18 @@ public:
 
   // setter
   void setBytesTotal(qint64 bytesTotal);
+  void setBytesEachThread(int concurrency);
 
-  void updateProgressBar(qint64 bytesRecieved);
+  void updateProgressBar(int threadIndex, qint64 bytesRecieved);
   void combine();
 
 private:
   DownloadCard *card;
   QHash<int, bool> threadState;
   qint64 bytesTotal;
-  qint64 bytesDownloaded;
   QMutex mutex;
   QList<DownloadThread*> threads;
+  QHash<int, qint64> bytesEachThread;
+
+  qint64 getBytesDownloaded();
 };

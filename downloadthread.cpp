@@ -33,7 +33,7 @@ void DownloadThread::downloadPart() {
                             .arg(bytesReceived)
                             .arg(bytesTotal);
 
-            emit downloadSize(taskId, bytesReceived);
+            emit downloadSize(taskId, threadIndex, bytesReceived);
             if (progressBar == nullptr) {
               return;
             }
@@ -60,6 +60,11 @@ void DownloadThread::downloadPart() {
 
     emit downloadFinished(taskId, threadIndex);
   });
+
+  QEventLoop loop{};
+
+  connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+  loop.exec();
 }
 
 void DownloadThread::saveToTempDir(const QByteArray &bytes) {

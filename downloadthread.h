@@ -5,6 +5,7 @@
 #include <QNetworkReply>
 #include <QProgressBar>
 #include <QThread>
+#include <QEventLoop>
 
 class DownloadThread : public QThread {
   Q_OBJECT
@@ -31,5 +32,5 @@ private:
 
 signals:
   void downloadFinished(int taskId, int threadIndex);
-  void downloadSize(int taskId, qint64 downloadedSize);
+  void downloadSize(int taskId, int threadIndex, qint64 downloadedSize);
 };
