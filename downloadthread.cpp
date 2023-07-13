@@ -3,14 +3,16 @@
 DownloadThread::DownloadThread(int taskId, int threadIndex, QString url,
                                qlonglong begin, qlonglong end, QObject *parrent)
     : QThread(parrent), taskId(taskId), threadIndex(threadIndex), url(url),
-      begin(begin), end(end), loop(new QEventLoop(this)) {}
+      begin(begin), end(end), stopped(false) {}
 
 DownloadThread::~DownloadThread() {
   qDebug() << QString{"thread{%1} exits"}.arg(threadIndex);
 }
 void DownloadThread::stop() {
   deleteTemp();
-  loop->quit();
+  stopped = true;
+  // TODO: 释放reply
+  emit stopSelf();
 }
 void DownloadThread::run() { downloadPart(); }
 
@@ -41,6 +43,8 @@ void DownloadThread::downloadPart() {
                                   bytesTotal);
           });
   connect(reply, &QNetworkReply::finished, [reply, this]() {
+    if (stopped)
+      return;
     if (reply->error() != QNetworkReply::NoError) {
       // TODO: 单个线程下载错误
     }
@@ -55,11 +59,17 @@ void DownloadThread::downloadPart() {
     emit downloadFinished(taskId, threadIndex);
   });
 
-  connect(reply, &QNetworkReply::finished, loop, [this, manager]() {
+  QEventLoop loop{};
+  connect(reply, &QNetworkReply::finished, &loop, [&loop, manager]() {
     manager->deleteLater();
-    loop->quit();
+    loop.quit();
   });
-  loop->exec();
+  connect(this, &DownloadThread::stopSelf, &loop, [&loop, manager, reply]() {
+    // reply->abort();
+    manager->deleteLater();
+    loop.quit();
+  });
+  loop.exec();
 }
 
 void DownloadThread::saveToTempDir(const QByteArray &bytes) {
