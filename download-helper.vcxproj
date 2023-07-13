@@ -84,6 +84,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="downloadcard.cpp" />
+    <ClCompile Include="downloaddetail.cpp" />
+    <ClCompile Include="downloaddetailcard.cpp" />
     <ClCompile Include="downloadthread.cpp" />
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="taskstate.cpp" />
@@ -97,6 +99,8 @@
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="downloadcard.ui" />
+    <QtUic Include="downloaddetail.ui" />
+    <QtUic Include="downloaddetailcard.ui" />
     <QtUic Include="mainwindow.ui" />
   </ItemGroup>
   <ItemGroup>
@@ -107,6 +111,12 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="taskstate.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="downloaddetail.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="downloaddetailcard.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

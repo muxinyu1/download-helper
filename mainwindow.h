@@ -21,8 +21,6 @@ class MainWindow : public QMainWindow {
 
 public:
   MainWindow(QWidget *parent = nullptr);
-  MainWindow(QString url, QString output, int concurrency,
-             QWidget *parrent = nullptr);
   ~MainWindow();
 
   void createDownloadTask(QString url, QString output, int concurrency);
@@ -32,14 +30,21 @@ private:
   QNetworkAccessManager *manager;
   QHash<int, QSharedPointer<TaskState>> tasks;
   int currentTaskId;
+  QHash<QListWidgetItem *, int> taskFromItem;
+  QListWidgetItem *currentItem;
 
 private:
   void Download(int taskId, QString url, QString output, int concurrency);
+  QString getFilenameFromUrl(QString url);
 
 signals:
   void taskFinished(int taskId);
 private slots:
   void updateTaskState(int taskId, int threadIndex);
   void updateTaskProgressBar(int taskId, int threadIndex, qint64 downloadedSize);
+  void updateTaskThreadDetail(int taskId, int threadIndex, qint64 bytesReceived,
+                              qint64 bytesTotal);
   void combineFiles(int taskId);
+  void changeDetail(QListWidgetItem *item);
+  void markTaskAsOk(int taskId);
 };

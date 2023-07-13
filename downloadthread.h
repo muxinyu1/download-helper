@@ -1,19 +1,17 @@
 #pragma once
 
 #include <QDir>
+#include <QEventLoop>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QProgressBar>
 #include <QThread>
-#include <QEventLoop>
 
 class DownloadThread : public QThread {
   Q_OBJECT
 
 public:
   DownloadThread(int taskId, int threadIndex, QString url, qlonglong begin,
-                 qlonglong end, QProgressBar *progressBar,
-                 QObject *parrent = nullptr);
+                 qlonglong end, QObject *parrent = nullptr);
   ~DownloadThread();
 
 protected:
@@ -25,7 +23,6 @@ private:
   QString url;
   qlonglong begin;
   qlonglong end;
-  QProgressBar *progressBar;
 
   void downloadPart();
   void saveToTempDir(const QByteArray &bytes);
@@ -33,4 +30,6 @@ private:
 signals:
   void downloadFinished(int taskId, int threadIndex);
   void downloadSize(int taskId, int threadIndex, qint64 downloadedSize);
+  void downloadProgress(int taskId, int threadIndex, qint64 bytesReceived,
+                        qint64 bytesTotal);
 };

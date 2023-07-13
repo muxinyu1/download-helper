@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>690</width>
-    <height>452</height>
+    <width>551</width>
+    <height>341</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,9 +24,9 @@ background-color: rgb(255, 255, 255);</string>
    <widget class="QFrame" name="frame">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>30</y>
-      <width>521</width>
+      <x>0</x>
+      <y>0</y>
+      <width>551</width>
       <height>341</height>
      </rect>
     </property>
@@ -41,12 +41,12 @@ background-color: rgb(255, 255, 255);</string>
       <rect>
        <x>0</x>
        <y>5</y>
-       <width>521</width>
+       <width>551</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>TextLabel</string>
+      <string>Download Helper</string>
      </property>
     </widget>
     <widget class="QListWidget" name="downloadingList">
@@ -58,8 +58,82 @@ background-color: rgb(255, 255, 255);</string>
        <height>271</height>
       </rect>
      </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="horizontalScrollMode">
+      <enum>QAbstractItemView::ScrollPerPixel</enum>
+     </property>
+     <property name="movement">
+      <enum>QListView::Static</enum>
+     </property>
+     <property name="flow">
+      <enum>QListView::TopToBottom</enum>
+     </property>
+     <property name="resizeMode">
+      <enum>QListView::Adjust</enum>
+     </property>
      <property name="viewMode">
       <enum>QListView::IconMode</enum>
+     </property>
+    </widget>
+    <widget class="QListWidget" name="downloadDetail">
+     <property name="geometry">
+      <rect>
+       <x>290</x>
+       <y>50</y>
+       <width>251</width>
+       <height>271</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Microsoft YaHei UI</family>
+      </font>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="horizontalScrollMode">
+      <enum>QAbstractItemView::ScrollPerPixel</enum>
+     </property>
+     <property name="movement">
+      <enum>QListView::Static</enum>
+     </property>
+     <property name="flow">
+      <enum>QListView::TopToBottom</enum>
+     </property>
+     <property name="resizeMode">
+      <enum>QListView::Adjust</enum>
+     </property>
+     <property name="viewMode">
+      <enum>QListView::IconMode</enum>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="close">
+     <property name="geometry">
+      <rect>
+       <x>504</x>
+       <y>10</y>
+       <width>41</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>×</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="add">
+     <property name="geometry">
+      <rect>
+       <x>450</x>
+       <y>10</y>
+       <width>41</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>+</string>
      </property>
     </widget>
    </widget>

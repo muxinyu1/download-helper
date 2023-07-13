@@ -1,10 +1,9 @@
 #include "downloadthread.h"
 
 DownloadThread::DownloadThread(int taskId, int threadIndex, QString url,
-                               qlonglong begin, qlonglong end,
-                               QProgressBar *progressBar, QObject *parrent)
+                               qlonglong begin, qlonglong end, QObject *parrent)
     : QThread(parrent), taskId(taskId), threadIndex(threadIndex), url(url),
-      begin(begin), end(end), progressBar(progressBar) {}
+      begin(begin), end(end) {}
 
 DownloadThread::~DownloadThread() {
   qDebug() << QString{"thread{%1} exits"}.arg(threadIndex);
@@ -34,17 +33,8 @@ void DownloadThread::downloadPart() {
                             .arg(bytesTotal);
 
             emit downloadSize(taskId, threadIndex, bytesReceived);
-            if (progressBar == nullptr) {
-              return;
-            }
-            if (bytesReceived >= bytesTotal) {
-              progressBar->setValue(100);
-            }
-            if (bytesTotal > 0) {
-              auto persent =
-                  static_cast<int>((bytesReceived * 100) / bytesTotal);
-              progressBar->setValue(persent);
-            }
+            emit downloadProgress(taskId, threadIndex, bytesReceived,
+                                  bytesTotal);
           });
   connect(reply, &QNetworkReply::finished, [reply, this]() {
     if (reply->error() != QNetworkReply::NoError) {
@@ -63,7 +53,10 @@ void DownloadThread::downloadPart() {
 
   QEventLoop loop{};
 
-  connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+  connect(reply, &QNetworkReply::finished, &loop, [&loop, manager]() {
+    manager->deleteLater();
+    loop.quit();
+  });
   loop.exec();
 }
 

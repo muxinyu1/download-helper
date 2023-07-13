@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>376</width>
-    <height>214</height>
+    <width>250</width>
+    <height>141</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -36,6 +36,9 @@
      <width>250</width>
      <height>141</height>
     </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
    </property>
    <property name="frameShape">
     <enum>QFrame::Box</enum>
@@ -109,6 +112,27 @@
     </property>
     <property name="text">
      <string>FILENAME</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ok">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>100</y>
+      <width>31</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>16</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>☑</string>
     </property>
    </widget>
   </widget>

@@ -49,6 +49,12 @@
     <ClCompile Include="taskstate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="downloaddetail.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="downloaddetailcard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="mainwindow.h">
@@ -63,12 +69,24 @@
     <QtMoc Include="taskstate.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="downloaddetail.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="downloaddetailcard.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="mainwindow.ui">
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="downloadcard.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="downloaddetail.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="downloaddetailcard.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>

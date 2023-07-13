@@ -11,10 +11,11 @@ class DownloadCard : public QWidget
 	Q_OBJECT
 
 public:
-	DownloadCard(QWidget *parent = nullptr);
+	DownloadCard(QString filename, QWidget *parent = nullptr);
 	~DownloadCard();
 
 	void updateProgressBar(int percent);
+    void setOkVisiable();
 
 private:
 	Ui::DownloadCardClass *ui;
