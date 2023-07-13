@@ -83,6 +83,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="addtaskwindow.cpp" />
     <ClCompile Include="downloadcard.cpp" />
     <ClCompile Include="downloaddetail.cpp" />
     <ClCompile Include="downloaddetailcard.cpp" />
@@ -98,6 +99,7 @@
     <QtMoc Include="mainwindow.h" />
   </ItemGroup>
   <ItemGroup>
+    <QtUic Include="addtaskwindow.ui" />
     <QtUic Include="downloadcard.ui" />
     <QtUic Include="downloaddetail.ui" />
     <QtUic Include="downloaddetailcard.ui" />
@@ -117,6 +119,9 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="downloaddetailcard.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="addtaskwindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

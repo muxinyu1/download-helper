@@ -5,6 +5,7 @@ DownloadCard::DownloadCard(QString filename, QWidget *parent)
   ui->setupUi(this);
   ui->label->setText(filename);
   ui->ok->hide();
+  connect(ui->close, &QPushButton::clicked, this, [this]() { emit remove(); });
 }
 
 DownloadCard::~DownloadCard() { delete ui; }

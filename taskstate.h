@@ -5,6 +5,7 @@
 #include <QMutex>
 #include <QSharedPointer>
 #include <algorithm>
+#include <QFileDialog>
 #include "downloadcard.h"
 #include "downloadthread.h"
 #include "downloaddetailcard.h"
@@ -13,14 +14,17 @@ class TaskState : public QObject {
   Q_OBJECT
 
 public:
-  TaskState(DownloadCard* card, QHash<int, bool> threadState, QObject *parent = nullptr);
+  TaskState(int taskId, DownloadCard* card, QHash<int, bool> threadState, QString filename, QObject *parent = nullptr);
   ~TaskState();
+
+  void addThread(DownloadThread *thread);
+  int getThreadNum();
 
   // getter
   DownloadCard *getCard();
   QHash<int, bool> &getThreadState();
-  QList<DownloadThread*> &getThreads();
   QList<DownloadDetailCard *> &getDetails();
+  QString getFilename();
 
   // setter
   void setBytesTotal(qint64 bytesTotal);
@@ -30,9 +34,12 @@ public:
   void updateDetailCard(int threadIndex, qint64 bytesRecieved,
                         qint64 bytesTotal);
   void setOkVisible();
-  void combine();
+
+signals:
+  void remove(int taskId);
 
 private:
+  int taskId;
   DownloadCard *card;
   QHash<int, bool> threadState;
   qint64 bytesTotal;
@@ -40,8 +47,7 @@ private:
   QList<DownloadThread*> threads;
   QHash<int, qint64> bytesEachThread;
   QList<DownloadDetailCard*> details;
+  QString filename;
 
   qint64 getBytesDownloaded();
-
-
 };

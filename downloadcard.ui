@@ -46,7 +46,7 @@
    <property name="frameShadow">
     <enum>QFrame::Plain</enum>
    </property>
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="close">
     <property name="geometry">
      <rect>
       <x>220</x>

@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
   parser.addHelpOption();
   parser.addVersionOption();
 
-  QCommandLineOption urlOption{{"url", "u"}, "URL to download", "url"};
+  QCommandLineOption urlOption{{"url", "u"}, "URL to download", "url", ""};
   QCommandLineOption outputOption{{"output", "o"}, "Output filename", "output"};
   QCommandLineOption concurrencyOption{{"concurrency", "n"},
                                        "Concurrency number (default: 8)",

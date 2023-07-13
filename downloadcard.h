@@ -16,6 +16,8 @@ public:
 
 	void updateProgressBar(int percent);
     void setOkVisiable();
+signals:
+    void remove();
 
 private:
 	Ui::DownloadCardClass *ui;

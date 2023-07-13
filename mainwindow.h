@@ -3,12 +3,15 @@
 #include "downloadthread.h"
 #include "taskstate.h"
 #include "ui_mainwindow.h"
+#include "addtaskwindow.h"
 #include <QHash>
 #include <QMainWindow>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QThread>
 #include <QSharedPointer>
+#include <QFileDialog>
+#include <QException>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -30,12 +33,14 @@ private:
   QNetworkAccessManager *manager;
   QHash<int, QSharedPointer<TaskState>> tasks;
   int currentTaskId;
-  QHash<QListWidgetItem *, int> taskFromItem;
+  QHash<int, QListWidgetItem *>  listItemsFromTaskId;
   QListWidgetItem *currentItem;
+  QHash<QListWidgetItem *, QListWidget *> currentDetail;
 
 private:
   void Download(int taskId, QString url, QString output, int concurrency);
   QString getFilenameFromUrl(QString url);
+  QListWidget *createDownloadDetail(int taskId);
 
 signals:
   void taskFinished(int taskId);
@@ -47,4 +52,7 @@ private slots:
   void combineFiles(int taskId);
   void changeDetail(QListWidgetItem *item);
   void markTaskAsOk(int taskId);
+  void showAddTaskWindow();
+  void addTask(QString urls, int concurrecny);
+  void removeTask(int taskId);
 };

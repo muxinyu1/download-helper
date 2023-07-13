@@ -55,6 +55,9 @@
     <ClCompile Include="downloaddetailcard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="addtaskwindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="mainwindow.h">
@@ -75,6 +78,9 @@
     <QtMoc Include="downloaddetailcard.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="addtaskwindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="mainwindow.ui">
@@ -87,6 +93,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="downloaddetailcard.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="addtaskwindow.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>

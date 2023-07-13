@@ -3,10 +3,14 @@
 DownloadThread::DownloadThread(int taskId, int threadIndex, QString url,
                                qlonglong begin, qlonglong end, QObject *parrent)
     : QThread(parrent), taskId(taskId), threadIndex(threadIndex), url(url),
-      begin(begin), end(end) {}
+      begin(begin), end(end), loop(new QEventLoop(this)) {}
 
 DownloadThread::~DownloadThread() {
   qDebug() << QString{"thread{%1} exits"}.arg(threadIndex);
+}
+void DownloadThread::stop() {
+  deleteTemp();
+  loop->quit();
 }
 void DownloadThread::run() { downloadPart(); }
 
@@ -51,19 +55,16 @@ void DownloadThread::downloadPart() {
     emit downloadFinished(taskId, threadIndex);
   });
 
-  QEventLoop loop{};
-
-  connect(reply, &QNetworkReply::finished, &loop, [&loop, manager]() {
+  connect(reply, &QNetworkReply::finished, loop, [this, manager]() {
     manager->deleteLater();
-    loop.quit();
+    loop->quit();
   });
-  loop.exec();
+  loop->exec();
 }
 
 void DownloadThread::saveToTempDir(const QByteArray &bytes) {
   auto tempPath = QDir::tempPath();
-  auto filename = QFileInfo{QUrl(url).path()}.fileName() +
-                  QString{".part%1"}.arg(threadIndex);
+  auto filename = QUrl(url).fileName() + QString{".part%1"}.arg(threadIndex);
   QFile file{tempPath + "/" + filename};
   if (!file.open(QIODevice::WriteOnly)) {
     // TODO: 打开文件失败
@@ -71,6 +72,16 @@ void DownloadThread::saveToTempDir(const QByteArray &bytes) {
   auto bytesWritten = file.write(bytes);
   if (bytesWritten == -1) {
     // TODO: 写入失败
+  }
+  file.close();
+}
+
+void DownloadThread::deleteTemp() {
+  auto tempFilename = QDir::tempPath() + "/" + QUrl(url).fileName() +
+                      QString{".part%1"}.arg(threadIndex);
+  QFile file{tempFilename};
+  if (file.exists()) {
+    file.remove();
   }
   file.close();
 }

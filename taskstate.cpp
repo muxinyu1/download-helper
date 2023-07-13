@@ -1,13 +1,19 @@
 #include "taskstate.h"
 
-TaskState::TaskState(DownloadCard *card, QHash<int, bool> threadState,
+TaskState::TaskState(int taskId, DownloadCard *card, QHash<int, bool> threadState, QString filename,
                      QObject *parent)
-    : QObject(parent), card(card), threadState(threadState), bytesTotal(0),
-      mutex(), threads(), bytesEachThread(), details() {
+    : QObject(parent), taskId(taskId), card(card), threadState(threadState), bytesTotal(0),
+      mutex(), threads(), bytesEachThread(), details(), filename(filename) {
   for (int i = 0, len = threadState.size(); i < len; ++i) {
     auto detail = new DownloadDetailCard(QString{"Thread %1"}.arg(i));
     details.push_back(detail);
   }
+  connect(card, &DownloadCard::remove, this, [this]() {
+    for (auto thread : threads) {
+      thread->stop();
+    }
+    emit remove(this->taskId);
+  });
 }
 
 TaskState::~TaskState() {
@@ -18,13 +24,17 @@ TaskState::~TaskState() {
   }
 }
 
+void TaskState::addThread(DownloadThread *thread) { threads << thread; }
+
+int TaskState::getThreadNum() { return threads.size(); }
+
 DownloadCard *TaskState::getCard() { return card; }
 
 QHash<int, bool> &TaskState::getThreadState() { return threadState; }
 
-QList<DownloadThread *> &TaskState::getThreads() { return threads; }
-
 QList<DownloadDetailCard *> &TaskState::getDetails() { return details; }
+
+QString TaskState::getFilename() { return filename; }
 
 void TaskState::setBytesTotal(qint64 bytesTotal) {
   this->bytesTotal = bytesTotal;
@@ -64,9 +74,6 @@ void TaskState::updateDetailCard(int threadIndex, qint64 bytesRecieved,
 }
 
 void TaskState::setOkVisible() { card->setOkVisiable(); }
-
-void TaskState::combine() { // TODO: combine нд╪Ч
-}
 
 qint64 TaskState::getBytesDownloaded() {
   auto sum = std::accumulate(bytesEachThread.begin(), bytesEachThread.end(),

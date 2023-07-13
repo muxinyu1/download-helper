@@ -3,11 +3,13 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow()),
       manager(new QNetworkAccessManager()), tasks(), currentTaskId(0),
-      taskFromItem(), currentItem(nullptr) {
+      listItemsFromTaskId(), currentItem(nullptr), currentDetail() {
   ui->setupUi(this);
   connect(ui->downloadingList, &QListWidget::itemClicked, this,
           &MainWindow::changeDetail);
   connect(this, &MainWindow::taskFinished, this, &MainWindow::markTaskAsOk);
+  connect(ui->add, &QPushButton::clicked, this, &MainWindow::showAddTaskWindow);
+  connect(this, &MainWindow::taskFinished, this, &MainWindow::combineFiles);
 }
 
 MainWindow::~MainWindow() {
@@ -59,7 +61,6 @@ void MainWindow::Download(int taskId, QString url, QString output,
         // 设置TaskState的总字节数
         task->setBytesTotal(contentLength);
 
-        auto threads = task->getThreads();
         for (int i = 0; i < threadNum; ++i) {
           auto begin = i * blockSize;
           auto end = begin + blockSize - 1;
@@ -75,17 +76,39 @@ void MainWindow::Download(int taskId, QString url, QString output,
                   &MainWindow::updateTaskState);
           connect(thread, &DownloadThread::downloadProgress, this,
                   &MainWindow::updateTaskThreadDetail);
-          threads.push_back(thread);
+          task->addThread(thread);
           thread->start();
         }
       });
   // TODO: connect 本线程下载完毕
-
-  connect(this, &MainWindow::taskFinished, this, &MainWindow::combineFiles);
 }
 
 QString MainWindow::getFilenameFromUrl(QString url) {
   return QUrl(url).fileName();
+}
+
+QListWidget *MainWindow::createDownloadDetail(int taskId) {
+  auto task = tasks[taskId];
+  auto &details = task->getDetails();
+  auto downloadDetail = new QListWidget(ui->frame);
+  downloadDetail->setGeometry(ui->downloadDetail->geometry());
+  downloadDetail->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+  downloadDetail->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+  downloadDetail->setMovement(QListView::Static);
+  downloadDetail->setFlow(QListView::TopToBottom);
+  downloadDetail->setResizeMode(QListView::Adjust);
+  downloadDetail->setViewMode(QListView::IconMode);
+
+  // 添加表项
+  for (auto detail : details) {
+    auto listItem = new QListWidgetItem(downloadDetail);
+    downloadDetail->addItem(listItem);
+
+    listItem->setSizeHint(detail->size());
+    downloadDetail->setItemWidget(listItem, detail);
+  }
+  downloadDetail->hide();
+  return downloadDetail;
 }
 
 void MainWindow::updateTaskProgressBar(int taskId, int threadIndex,
@@ -103,7 +126,48 @@ void MainWindow::updateTaskThreadDetail(int taskId, int threadIndex,
 
 void MainWindow::combineFiles(int taskId) {
   auto task = tasks[taskId];
-  task->combine();
+  auto caption =
+      QString{"Select A Position to Save %1"}.arg(task->getFilename());
+  auto savedDir = QFileDialog::getExistingDirectory(this, caption);
+  int threadNum = task->getThreadNum();
+  auto filename = task->getFilename();
+  QFile file{savedDir + "/" + filename};
+  if (!file.open(QIODevice::WriteOnly)) {
+    qDebug() << "open " << savedDir + "/" + filename << " failed.";
+    file.close();
+    return;
+  }
+
+  qDebug() << "start to write " << savedDir + "/" + filename
+           << ", threadNum = " << threadNum;
+
+  // 组合文件
+  for (decltype(threadNum) i = 0; i < threadNum; ++i) {
+    auto tempDir = QDir::tempPath();
+    auto partFilename =
+        tempDir + "/" + QString{"%1.part%2"}.arg(filename).arg(i);
+    QFile partFile{partFilename};
+    if (!partFile.open(QIODevice::ReadOnly)) {
+      qDebug() << "open " << partFilename << " failed.";
+      file.close();
+      partFile.close();
+      return;
+    }
+    file.write(partFile.readAll());
+
+    qDebug() << partFilename << " has already been written to "
+             << savedDir + "/" + filename;
+
+    // 删除temp文件
+    try {
+      partFile.remove();
+      partFile.close();
+    } catch (QException e) {
+      qDebug() << "remove " << partFilename << " error: " << e.what();
+    }
+  }
+  qDebug() << filename << " saved.";
+  file.close();
 }
 
 void MainWindow::createDownloadTask(QString url, QString output,
@@ -124,12 +188,17 @@ void MainWindow::createDownloadTask(QString url, QString output,
     threadState.insert(i, false);
   }
 
-  auto task =
-      QSharedPointer<TaskState>{new TaskState(downloadCard, threadState, this)};
+  auto task = QSharedPointer<TaskState>{
+      new TaskState(currentTaskId, downloadCard, threadState, QUrl{url}.fileName(), this)};
   tasks.insert(currentTaskId, task);
-  taskFromItem.insert(listItem, currentTaskId);
+  listItemsFromTaskId.insert(currentTaskId, listItem);
   Download(currentTaskId, url, output, concurrency);
+
+  currentDetail.insert(listItem, createDownloadDetail(currentTaskId));
+
   ++currentTaskId;
+
+  connect(task.get(), &TaskState::remove, this, &MainWindow::removeTask);
 }
 
 void MainWindow::updateTaskState(int taskId, int threadIndex) {
@@ -156,15 +225,18 @@ void MainWindow::updateTaskState(int taskId, int threadIndex) {
 }
 
 void MainWindow::changeDetail(QListWidgetItem *item) {
-  qDebug() << taskFromItem[item] << " is selected.";
+  qDebug() << item << " is selected.";
 
   // 多次点击同一个item不会更改detail视图
   if (currentItem == item) {
     return;
   }
+  if (currentItem != nullptr) {
+    currentDetail[currentItem]->hide();
+  }
+  currentDetail[item]->show();
   currentItem = item;
-
-  try {
+  /*try {
     auto task = tasks[taskFromItem[item]];
     auto downloadDetail = ui->downloadDetail;
     auto details = task->getDetails();
@@ -173,6 +245,10 @@ void MainWindow::changeDetail(QListWidgetItem *item) {
                     .arg(qint64(task.get()))
                     .arg(qint64(downloadDetail));
     qDebug() << "details = " << details;
+
+    for (int i = 0; i < downloadDetail->count(); ++i) {
+      downloadDetail->takeItem(i);
+    }
 
     for (auto detail : details) {
       auto listWidget = new QListWidgetItem(downloadDetail);
@@ -183,10 +259,40 @@ void MainWindow::changeDetail(QListWidgetItem *item) {
     }
   } catch (std::exception e) {
     qDebug() << e.what();
-  }
+  }*/
 }
 
 void MainWindow::markTaskAsOk(int taskId) {
   auto task = tasks[taskId];
   task->setOkVisible();
+}
+
+void MainWindow::showAddTaskWindow() {
+  auto addTaskWindow = new AddTaskWindow(this);
+  connect(addTaskWindow, &AddTaskWindow::addTask, this, &MainWindow::addTask);
+  addTaskWindow->show();
+}
+
+void MainWindow::addTask(QString urls, int concurrency) {
+  auto urlList = urls.split('\n');
+  for (auto &url : urlList) {
+    createDownloadTask(url, "", concurrency);
+  }
+}
+
+void MainWindow::removeTask(int taskId) {
+  auto task = tasks[taskId];
+  auto listItem = listItemsFromTaskId[taskId];
+  auto downloadDetail = currentDetail[listItem];
+  downloadDetail->close();
+  auto row = ui->downloadingList->row(listItem);
+  auto p = ui->downloadingList->takeItem(row);
+  delete p;
+
+  currentDetail.remove(listItem);
+  listItemsFromTaskId.remove(taskId);
+  tasks.remove(taskId);
+  if (currentItem == listItem) {
+    currentItem = nullptr;
+  }
 }

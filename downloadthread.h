@@ -14,6 +14,8 @@ public:
                  qlonglong end, QObject *parrent = nullptr);
   ~DownloadThread();
 
+  void stop();
+
 protected:
   void run() override;
 
@@ -23,9 +25,11 @@ private:
   QString url;
   qlonglong begin;
   qlonglong end;
+  QEventLoop* loop;
 
   void downloadPart();
   void saveToTempDir(const QByteArray &bytes);
+  void deleteTemp();
 
 signals:
   void downloadFinished(int taskId, int threadIndex);
