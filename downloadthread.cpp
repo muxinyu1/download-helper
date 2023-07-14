@@ -3,8 +3,7 @@
 DownloadThread::DownloadThread(int taskId, int threadIndex, QString url,
                                qlonglong begin, qlonglong end, QObject *parrent)
     : QThread(parrent), taskId(taskId), threadIndex(threadIndex), url(url),
-      begin(begin), end(end), stopped(false), pos(begin), newPos(begin),
-      reply(nullptr) {}
+      begin(begin), end(end), stopped(false), pos(begin), newPos(begin) {}
 
 DownloadThread::~DownloadThread() {
   qDebug() << QString{"thread{%1} exits"}.arg(threadIndex);
@@ -19,10 +18,6 @@ void DownloadThread::stop() {
 }
 void DownloadThread::pause() {
   pos = newPos;
-  disconnect(reply, &QNetworkReply::downloadProgress, this,
-             &DownloadThread::downloadProgressOfReply);
-  disconnect(reply, &QNetworkReply::finished, this,
-             &DownloadThread::handleReplyFinished);
 }
 void DownloadThread::resume() {}
 void DownloadThread::run() { downloadPart(begin, end); }
@@ -44,11 +39,26 @@ void DownloadThread::downloadPart(qint64 begin, qint64 end) {
 
   auto manager =
       QSharedPointer<QNetworkAccessManager>{new QNetworkAccessManager()};
-  reply = manager->get(request);
+  auto reply = manager->get(request);
   connect(reply, &QNetworkReply::downloadProgress, this,
           &DownloadThread::downloadProgressOfReply);
-  connect(reply, &QNetworkReply::finished, this,
-          &DownloadThread::handleReplyFinished);
+  connect(reply, &QNetworkReply::finished, [this, reply]() {
+    if (isInterruptionRequested())
+      return;
+    if (reply->error() != QNetworkReply::NoError) {
+      // TODO: 单个线程下载错误
+    }
+
+    qDebug() << QString{"Thread {%1} reply finished"}.arg(threadIndex);
+
+    auto bytes = reply->readAll();
+    qDebug() << "read ok from " << reply;
+    saveToTempDir(bytes);
+
+    qDebug() << QString{"Thread{%1} ok"}.arg(threadIndex);
+
+    emit downloadFinished(taskId, threadIndex);
+      });
 
   QEventLoop loop{};
   connect(reply, &QNetworkReply::finished, &loop, [&loop, manager]() {
@@ -103,20 +113,21 @@ inline qint64 DownloadThread::getBytesDownloaded() { return newPos - begin; }
 inline qint64 DownloadThread::getBytesTotal() { return end - begin + 1; }
 
 void DownloadThread::handleReplyFinished() {
-  if (isInterruptionRequested())
-    return;
-  if (reply->error() != QNetworkReply::NoError) {
-    // TODO: 单个线程下载错误
-  }
+  //if (isInterruptionRequested())
+  //  return;
+  //if (reply->error() != QNetworkReply::NoError) {
+  //  // TODO: 单个线程下载错误
+  //}
 
-  qDebug() << QString{"Thread {%1} reply finished"}.arg(threadIndex);
+  //qDebug() << QString{"Thread {%1} reply finished"}.arg(threadIndex);
 
-  auto bytes = reply->readAll();
-  saveToTempDir(bytes);
+  //auto bytes = reply->readAll();
+  //qDebug() << "read ok from " << reply;
+  //saveToTempDir(bytes);
 
-  qDebug() << QString{"Thread{%1} ok"}.arg(threadIndex);
+  //qDebug() << QString{"Thread{%1} ok"}.arg(threadIndex);
 
-  emit downloadFinished(taskId, threadIndex);
+  //emit downloadFinished(taskId, threadIndex);
 }
 
 void DownloadThread::downloadProgressOfReply(qint64 bytesReceived,

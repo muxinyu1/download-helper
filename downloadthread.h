@@ -30,7 +30,6 @@ private:
   bool stopped;
   qint64 pos;
   qint64 newPos;
-  QNetworkReply *reply;
 
   void downloadPart(qint64 begin, qint64 end);
   void saveToTempDir(const QByteArray &bytes);
