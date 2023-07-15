@@ -123,6 +123,9 @@
   <ItemGroup>
     <QtMoc Include="addtaskwindow.h" />
   </ItemGroup>
+  <ItemGroup>
+    <QtTranslation Include="Translation_zh_Hans.ts" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
     <Import Project="$(QtMsBuild)\qt.targets" />
