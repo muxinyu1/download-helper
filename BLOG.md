@@ -378,3 +378,159 @@ if (QUrl(url).scheme() == QLatin1String("ftp")) {
 性能分析同上次迭代，这里就不展示了.
 
 
+## Iteration 3
+
+### PSP表格
+
+| PSP                                     | Personal Software Process Stages        | 预估耗时（分钟） | 实际耗时（分钟） |
+| --------------------------------------- | --------------------------------------- | ---------------- | ---------------- |
+| Planning                                | 计划                                    |        5          |     5             |
+| · Estimate                              | · 估计这个任务需要多少时间              |           5       |  5                |
+| Development                             | 开发                                    |       300           |     300             |
+| · Analysis                              | · 需求分析 (包括学习新技术)             |         60    |              120    |
+| · Design Spec                           | · 生成设计文档                          |         10         |       5           |
+| · Coding Standard                       | · 代码规范 (为目前的开发制定合适的规范) |          5        |            5      |
+| · Design                                | · 具体设计                              |    60              |      60            |
+| · Coding                                | · 具体编码                              |    300              |      500            |
+| · Code Review                           | · 代码复审                              |  20                |       20           |
+| · Test                                  | · 测试（自我测试，修改代码，提交修改）  |        40          |            40      |
+| Reporting                               | 报告                                    |             80     |      50            |
+| · Test Report                           | · 测试报告                              |       60           |     40             |
+| · Size Measurement                      | · 计算工作量                            |       10           |    5              |
+| · Postmortem & Process Improvement Plan | · 事后总结, 并提出过程改进计划          |          10        |      5            |
+|                                         | 合计                                    |           375       |       355           |
+
+#### 用时分析
+
+本次迭代比较简单，都是些修补性的工作，主要还是在于对需求的理解上.
+
+### 思路
+
+#### 资料来源
+
+CSDN + Stackoverflow + Google + Qt文档 + ChatGPT
+
+#### 自动分类和归档
+
+我的理解是让用户选择下载文件的保存位置时默认选择一些预定的文件夹；
+
+比如如果下载文件后缀是.txt，程序会默认弹出Documents文件夹作为默认的保存位置； 如果是.mp4，默认弹出的保存位置就应该是Videos.
+
+Qt对此支持非常齐全：
+
+Qt提供了一些预设置的文件夹路径，这些路径存储在QStandardPaths类中，包括：
+
+QStandardPaths::DesktopLocation：桌面文件夹的路径
+
+QStandardPaths::DocumentsLocation：文档文件夹的路径
+
+QStandardPaths::PicturesLocation：图片文件夹的路径
+
+QStandardPaths::MusicLocation：音乐文件夹的路径
+
+QStandardPaths::MoviesLocation：电影文件夹的路径
+
+QStandardPaths::DownloadLocation：下载文件夹的路径
+
+QStandardPaths::AppDataLocation：应用程序数据文件夹的路径
+
+QStandardPaths::AppConfigLocation：应用程序配置文件夹的路径
+
+而QFileDialog::getExistingDirectory函数的第三个参数正式默认打开的文件夹路径.
+
+于是，只需要判断url文件的后缀，即可实现自动分类：
+
+```cpp
+QString MainWindow::getSavedDir(const QString& filename) { 
+  QString ext = QFileInfo(filename).suffix().toLower();
+  QString dir;
+
+  if (ext.isEmpty()) { // 没有后缀名
+    dir = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+  } else if (ext == "txt" || ext == "md" || ext == "doc" || ext == "docx" ||
+             ext == "odt") { // 文本文件
+    dir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+  } else if (ext == "jpg" || ext == "jpeg" || ext == "png" || ext == "bmp" ||
+             ext == "gif") { // 图片文件
+    dir = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
+  } else if (ext == "mp3" || ext == "wav" || ext == "flac" || ext == "aac" ||
+             ext == "wma") { // 音乐文件
+    dir = QStandardPaths::writableLocation(QStandardPaths::MusicLocation);
+  } else if (ext == "mp4" || ext == "avi" || ext == "mov" || ext == "mkv" ||
+             ext == "wmv") { // 视频文件
+    dir = QStandardPaths::writableLocation(QStandardPaths::MoviesLocation);
+  } else if (ext == "pdf") { // PDF文件
+    dir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+  } else if (ext == "zip" || ext == "rar" || ext == "7z" || ext == "tar.gz" ||
+             ext == "tgz") { // 压缩文件
+    dir = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+  } else { // 没有匹配的后缀名
+    dir = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+  }
+
+  return dir;
+}
+```
+#### 自动安装和解压
+
+笔者认为，实现自动安装基于操作系统的不同也随之不同，如Linux系统安装软件需要执行dpkg命令，而Windows系统常见的安装方式时双击.exe文件.
+
+如果下载的文件存在恶意病毒之类的东西，那么自动安装是不妥的，因而这里没有实现自动安装.
+
+对于解压，只需要根据后缀名打开文件即可，打开的方式交给操作系统，Windows下操作系统会让用户选择打开文件使用的程序.
+
+QDesktopServices::openUrl()是Qt中的一个静态方法，它可以在操作系统中打开指定的URL地址或本地文件.
+
+实现如下：
+
+```cpp
+// 判断是否是压缩包
+auto isArchive = [](QString filename) {
+  auto ext = QFileInfo(filename).suffix().toLower();
+  if (ext == "zip" || ext == "rar" || ext == "7z" || ext == "tar.gz" ||
+      ext == "tgz") {
+    return true;
+  }
+  return false;
+};
+
+if (isArchive(filename)) {
+  // 使用默认程序打开
+  QDesktopServices::openUrl(QUrl{savedDir + "/" + filename});
+}
+```
+
+#### 多语言
+
+Qt原生支持多语言，只需要添加.ts文件即可.
+
+编写.ts文件，对“简体中文”进行翻译，部分窗口如下：
+
+![本地化](./本地化.png)
+
+无需做其他工作，程序运行时会自动判断操作系统使用的语言，然后自动选择语言显示.
+
+#### 限速
+
+使用QNetworkReply::setReadBufferSize()方法设置缓冲区大小，从而限制下载速度.
+
+通过设置缓冲区大小可以控制网络请求读取的数据量，从而达到限制下载速度的目的.
+
+实现如下：
+
+```cpp
+if (speed != -1) {//限速
+  reply->setReadBufferSize((qint64)speed * 1024);
+}
+```
+speed是用户输入的值，修改创建下载任务界面:
+
+![限速](./imgs/限速.png)
+
+这样就实现了限速功能.
+
+### 性能分分析
+
+性能分析与第一次迭代类似，这里不作展示.
+
+
