@@ -26,6 +26,12 @@ public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
 
+  /// <summary>
+  /// 创建下载任务，并加入下载队列
+  /// </summary>
+  /// <param name="url">要下载文件的url</param>
+  /// <param name="output">输出的文件夹</param>
+  /// <param name="concurrency">线程数</param>
   void createDownloadTask(QString url, QString output, int concurrency);
 
 private:
@@ -49,7 +55,15 @@ private slots:
   void updateTaskProgressBar(int taskId, int threadIndex, qint64 downloadedSize);
   void updateTaskThreadDetail(int taskId, int threadIndex, qint64 bytesReceived,
                               qint64 bytesTotal);
+  /// <summary>
+  /// 合并一个task的各个线程的文件
+  /// </summary>
+  /// <param name="taskId">taskId</param>
   void combineFiles(int taskId);
+  /// <summary>
+  /// 改变详情面板显示的下载任务
+  /// </summary>
+  /// <param name="item"></param>
   void changeDetail(QListWidgetItem *item);
   void markTaskAsOk(int taskId);
   void showAddTaskWindow();
