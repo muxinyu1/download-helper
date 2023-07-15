@@ -16,7 +16,7 @@ public:
   AddTaskWindow(QWidget *parent = nullptr);
   ~AddTaskWindow();
 signals:
-  void addTask(QString urls, int concurrency);
+  void addTask(QString urls, int concurrency, bool speedLimit, int speed);
 
 private:
   Ui::AddTaskWindowClass *ui;

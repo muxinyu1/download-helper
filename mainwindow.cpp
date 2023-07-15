@@ -18,13 +18,13 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::Download(int taskId, QString url, QString output,
-                          int concurrency) {
+                          int concurrency, bool speedLimit, int speed) {
   qDebug() << QString{"create task{%1}, url = {%2}"}.arg(taskId).arg(url);
   QNetworkRequest request{QUrl(url)};
-  auto reply = this->manager->head(request);
+  auto reply = manager->head(request);
   connect(
       reply, &QNetworkReply::finished, this,
-      [this, reply, concurrency, url, taskId]() {
+      [this, reply, concurrency, url, taskId, speedLimit, speed]() {
         int threadNum = concurrency;
         if (reply->error() != QNetworkReply::NoError) {
           // TODO: ³öÏÖÇëÇó´íÎó
@@ -77,6 +77,11 @@ void MainWindow::Download(int taskId, QString url, QString output,
           connect(thread, &DownloadThread::downloadProgress, this,
                   &MainWindow::updateTaskThreadDetail);
           task->addThread(thread);
+
+          if (speedLimit) {
+            thread->setSpeed(speed);
+          }
+
           thread->start();
         }
       });
@@ -157,10 +162,11 @@ void MainWindow::updateTaskThreadDetail(int taskId, int threadIndex,
 
 void MainWindow::combineFiles(int taskId) {
   auto task = tasks[taskId];
-  auto savedDir = getSavedDir(task->getFilename());
+  auto savedDirDefault = getSavedDir(task->getFilename());
   auto caption =
       QString{"Select A Position to Save %1"}.arg(task->getFilename());
-  auto savedDir = QFileDialog::getExistingDirectory(this, caption, savedDir);
+  auto savedDir =
+      QFileDialog::getExistingDirectory(this, caption, savedDirDefault);
   int threadNum = task->getThreadNum();
   auto filename = task->getFilename();
   QFile file{savedDir + "/" + filename};
@@ -217,7 +223,8 @@ void MainWindow::combineFiles(int taskId) {
 }
 
 void MainWindow::createDownloadTask(QString url, QString output,
-                                    int concurrency) {
+                                    int concurrency, bool speedLimit,
+                                    int speed) {
 
   QListWidgetItem *listItem = new QListWidgetItem(ui->downloadingList);
   ui->downloadingList->addItem(listItem);
@@ -238,7 +245,7 @@ void MainWindow::createDownloadTask(QString url, QString output,
       new TaskState(currentTaskId, downloadCard, threadState, QUrl{url}.fileName(), this)};
   tasks.insert(currentTaskId, task);
   listItemsFromTaskId.insert(currentTaskId, listItem);
-  Download(currentTaskId, url, output, concurrency);
+  Download(currentTaskId, url, output, concurrency, speedLimit, speed);
 
   currentDetail.insert(listItem, createDownloadDetail(currentTaskId));
 
@@ -319,10 +326,10 @@ void MainWindow::showAddTaskWindow() {
   addTaskWindow->show();
 }
 
-void MainWindow::addTask(QString urls, int concurrency) {
+void MainWindow::addTask(QString urls, int concurrency, bool speedLimit, int speed) {
   auto urlList = urls.split('\n');
   for (auto &url : urlList) {
-    createDownloadTask(url, "", concurrency);
+    createDownloadTask(url, "", concurrency, speedLimit, speed);
   }
 }
 

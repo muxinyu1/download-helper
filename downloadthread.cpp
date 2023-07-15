@@ -3,7 +3,7 @@
 DownloadThread::DownloadThread(int taskId, int threadIndex, QString url,
                                qlonglong begin, qlonglong end, QObject *parrent)
     : QThread(parrent), taskId(taskId), threadIndex(threadIndex), url(url),
-      begin(begin), end(end), stopped(false), pos(begin), newPos(begin) {}
+      begin(begin), end(end), stopped(false), pos(begin), newPos(begin), speed(-1) {}
 
 DownloadThread::~DownloadThread() {
   qDebug() << QString{"thread{%1} exits"}.arg(threadIndex);
@@ -20,6 +20,7 @@ void DownloadThread::pause() {
   pos = newPos;
 }
 void DownloadThread::resume() {}
+void DownloadThread::setSpeed(int speed) { this->speed = speed; }
 void DownloadThread::run() { downloadPart(begin, end); }
 
 void DownloadThread::downloadPart(qint64 begin, qint64 end) {
@@ -43,6 +44,11 @@ void DownloadThread::downloadPart(qint64 begin, qint64 end) {
   auto manager =
       QSharedPointer<QNetworkAccessManager>{new QNetworkAccessManager()};
   auto reply = manager->get(request);
+
+  if (speed != -1) {//ÏÞËÙ
+    reply->setReadBufferSize((qint64)speed * 1024);
+  }
+
   connect(reply, &QNetworkReply::downloadProgress, this,
           &DownloadThread::downloadProgressOfReply);
   connect(reply, &QNetworkReply::finished, [this, reply]() {

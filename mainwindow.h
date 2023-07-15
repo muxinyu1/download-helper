@@ -34,7 +34,9 @@ public:
   /// <param name="url">要下载文件的url</param>
   /// <param name="output">输出的文件夹</param>
   /// <param name="concurrency">线程数</param>
-  void createDownloadTask(QString url, QString output, int concurrency);
+  /// <param name="speedLimit">是否限速</param>
+  /// <param name="speed">下载速度(KB/S)</param>
+  void createDownloadTask(QString url, QString output, int concurrency, bool speedLimit, int speed);
 
 private:
   Ui::MainWindow *ui;
@@ -46,7 +48,7 @@ private:
   QHash<QListWidgetItem *, QListWidget *> currentDetail;
 
 private:
-  void Download(int taskId, QString url, QString output, int concurrency);
+  void Download(int taskId, QString url, QString output, int concurrency, bool speedLimit, int speed);
   QString getFilenameFromUrl(QString url);
   QListWidget *createDownloadDetail(int taskId);
   QString getSavedDir(const QString& filename);
@@ -70,6 +72,6 @@ private slots:
   void changeDetail(QListWidgetItem *item);
   void markTaskAsOk(int taskId);
   void showAddTaskWindow();
-  void addTask(QString urls, int concurrecny);
+  void addTask(QString urls, int concurrecny, bool speedLimit, int speed);
   void removeTask(int taskId);
 };

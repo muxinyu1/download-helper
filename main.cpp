@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
   MainWindow mainwindow{};
   mainwindow.show();
   if (url != "") { // TODO: 检查输入是否合法
-    mainwindow.createDownloadTask(url, output, concurrency);
+    mainwindow.createDownloadTask(url, output, concurrency, false, -1);
   }
   return app.exec();
 }

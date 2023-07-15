@@ -4,7 +4,8 @@ AddTaskWindow::AddTaskWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::AddTaskWindowClass()) {
   ui->setupUi(this);
   connect(ui->add, &QPushButton::clicked, [this]() {
-    emit addTask(ui->urls->toPlainText(), ui->concurrency->value());
+    emit addTask(ui->urls->toPlainText(), ui->concurrency->value(),
+                 ui->speedLimit->isChecked(), ui->speed->value());
     this->close();
   });
 }
