@@ -12,6 +12,7 @@
 #include <QSharedPointer>
 #include <QFileDialog>
 #include <QException>
+#include <QStandardPaths>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -47,6 +48,7 @@ private:
   void Download(int taskId, QString url, QString output, int concurrency);
   QString getFilenameFromUrl(QString url);
   QListWidget *createDownloadDetail(int taskId);
+  QString getSavedDir(const QString& filename);
 
 signals:
   void taskFinished(int taskId);

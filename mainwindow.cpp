@@ -111,6 +111,37 @@ QListWidget *MainWindow::createDownloadDetail(int taskId) {
   return downloadDetail;
 }
 
+QString MainWindow::getSavedDir(const QString& filename) { 
+
+QString ext = QFileInfo(filename).suffix().toLower();
+  QString dir;
+
+  if (ext.isEmpty()) { // 没有后缀名
+    dir = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+  } else if (ext == "txt" || ext == "md" || ext == "doc" || ext == "docx" ||
+             ext == "odt") { // 文本文件
+    dir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+  } else if (ext == "jpg" || ext == "jpeg" || ext == "png" || ext == "bmp" ||
+             ext == "gif") { // 图片文件
+    dir = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
+  } else if (ext == "mp3" || ext == "wav" || ext == "flac" || ext == "aac" ||
+             ext == "wma") { // 音乐文件
+    dir = QStandardPaths::writableLocation(QStandardPaths::MusicLocation);
+  } else if (ext == "mp4" || ext == "avi" || ext == "mov" || ext == "mkv" ||
+             ext == "wmv") { // 视频文件
+    dir = QStandardPaths::writableLocation(QStandardPaths::MoviesLocation);
+  } else if (ext == "pdf") { // PDF文件
+    dir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+  } else if (ext == "zip" || ext == "rar" || ext == "7z" || ext == "tar.gz" ||
+             ext == "tgz") { // 压缩文件
+    dir = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+  } else { // 没有匹配的后缀名
+    dir = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+  }
+
+  return dir;
+}
+
 void MainWindow::updateTaskProgressBar(int taskId, int threadIndex,
                                        qint64 downloadedSize) {
   auto task = tasks[taskId];
@@ -126,9 +157,10 @@ void MainWindow::updateTaskThreadDetail(int taskId, int threadIndex,
 
 void MainWindow::combineFiles(int taskId) {
   auto task = tasks[taskId];
+  auto savedDir = getSavedDir(task->getFilename());
   auto caption =
       QString{"Select A Position to Save %1"}.arg(task->getFilename());
-  auto savedDir = QFileDialog::getExistingDirectory(this, caption);
+  auto savedDir = QFileDialog::getExistingDirectory(this, caption, savedDir);
   int threadNum = task->getThreadNum();
   auto filename = task->getFilename();
   QFile file{savedDir + "/" + filename};
