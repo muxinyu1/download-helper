@@ -33,6 +33,9 @@ void DownloadThread::downloadPart(qint64 begin, qint64 end) {
 
   QNetworkRequest request{QUrl{url}};
   auto bytesRange = QString{"bytes=%1-%2"}.arg(begin).arg(end).toStdString();
+  if (QUrl(url).scheme() == QLatin1String("ftp")) {
+    request.setAttribute(QNetworkRequest::CustomVerbAttribute, "REST 0");
+  }
   request.setRawHeader("Range", bytesRange.c_str());
 
   qDebug() << QString{"sent Range: {%1}-{%2}"}.arg(begin).arg(end);
