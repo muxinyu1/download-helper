@@ -13,6 +13,7 @@
 #include <QFileDialog>
 #include <QException>
 #include <QStandardPaths>
+#include <QDesktopServices>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {

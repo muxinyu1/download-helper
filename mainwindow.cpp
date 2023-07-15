@@ -200,6 +200,20 @@ void MainWindow::combineFiles(int taskId) {
   }
   qDebug() << filename << " saved.";
   file.close();
+  // 判断是否是压缩包
+  auto isArchive = [](QString filename) {
+    auto ext = QFileInfo(filename).suffix().toLower();
+    if (ext == "zip" || ext == "rar" || ext == "7z" || ext == "tar.gz" ||
+        ext == "tgz") {
+      return true;
+    }
+    return false;
+  };
+
+  if (isArchive(filename)) {
+    // 使用默认程序打开
+    QDesktopServices::openUrl(QUrl{savedDir + "/" + filename});
+  }
 }
 
 void MainWindow::createDownloadTask(QString url, QString output,
